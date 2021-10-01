@@ -4,7 +4,7 @@ metadata:
   name: azure-queue-auth
 spec:
   secretTargetRef:
-    - parameter: connectionString
+    - parameter: connection
       name: azure-connection-strings
       key: storage-account-connection-string
 
