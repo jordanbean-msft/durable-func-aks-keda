@@ -1,13 +1,7 @@
 param containerRegistryName string
-param imageName string
-param imageVersion string
-param inputQueueName string
-param inputStorageContainerName string
 param longName string
-param maxIdleTimeInMinutes int
-param numberOfContainersToCreate int
-param outputStorageContainerName string
 param storageAccountName string
+param logAnalyticsWorkspaceName string
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-04-01' existing = {
   name: storageAccountName
@@ -17,6 +11,10 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2021-06-01-pr
   name: containerRegistryName
 }
 
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2021-06-01' existing = {
+  name: logAnalyticsWorkspaceName
+}
+
 resource aks 'Microsoft.ContainerService/managedClusters@2021-07-01' = {
   name: 'aks-${longName}'
   location: resourceGroup().location
@@ -24,13 +22,63 @@ resource aks 'Microsoft.ContainerService/managedClusters@2021-07-01' = {
     name: 'Basic'
     tier: 'Free'
   }
+  identity: {
+    type: 'SystemAssigned'
+  }
   properties: {
     agentPoolProfiles: [
       {
-        name: 'nodepool1'
+        name: 'agentpool'
         count: 1
-        enableAutoScaling: true        
+        vmSize: 'Standard_DS2_v2'
+        osDiskSizeGB: 60
+        osDiskType: 'Ephemeral'
+        type: 'VirtualMachineScaleSets'
+        enableAutoScaling: true
+        osType: 'Linux'
+        osSKU: 'Ubuntu'
+        minCount: 1
+        maxCount: 5
+        mode: 'System'
+      }
+      {
+        name: 'computepool'
+        count: 1
+        vmSize: 'Standard_D4s_v3'
+        osDiskSizeGB: 60
+        osDiskType: 'Ephemeral'
+        type: 'VirtualMachineScaleSets'
+        minCount: 1
+        maxCount: 20
+        enableAutoScaling: true
+        mode: 'User'
+        osType: 'Linux'
+        osSKU: 'Ubuntu'
       }
     ]
+    addonProfiles: {
+      azurepolicy: {
+        enabled: true
+      }
+      omsAgent: {
+        enabled: true
+        config: {
+          logAnalyticsWorkspaceResourceID: logAnalyticsWorkspace.id
+        }
+      }
+    }
+    enableRBAC: true
+    dnsPrefix: longName
   }
 }
+
+resource acrPullRoleAssignment 'Microsoft.Authorization/roleAssignments@2021-04-01-preview' = {
+  name: guid('${longName}-AcrPullRole')
+  scope: containerRegistry
+  properties: {
+    principalId: aks.properties.identityProfile.kubeletidentity.objectId
+    roleDefinitionId: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d'
+  }
+}
+
+output aksName string = aks.name
