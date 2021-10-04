@@ -1,0 +1,4 @@
+azure-functions
+azure-functions-durable
+azure-storage-blob
+azure-storage-queue

@@ -1,0 +1,28 @@
+# Default values for compute.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image:
+  registry:
+  repository: 
+  tag: latest
+
+storage:
+  storageAccountName:
+  inputQueueName:
+  inputStorageContainerName:
+  outputStorageContainerName:
+
+replicas: 1
+
+resources:
+  requests:
+    cpu: 1
+    memory: 4Gi
+scale:
+  pollingInterval: 5
+  cooldownPeriod: 30
+  minReplicaCount: 0
+  maxReplicaCount: 100
+  targetLengthOfQueue: '5'
+  loopSleepTimeInSeconds: 5

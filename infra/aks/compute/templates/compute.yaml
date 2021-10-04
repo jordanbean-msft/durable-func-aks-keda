@@ -1,0 +1,71 @@
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: azure-queue-auth
+spec:
+  secretTargetRef:
+    - parameter: connection
+      name: azure-connection-strings
+      key: storage-account-connection-string
+
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: compute-scaled-object
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: compute-deployment
+  pollingInterval: {{ .Values.scale.pollingInterval }}
+  cooldownPeriod: {{ .Values.scale.cooldownPeriod }}
+  minReplicaCount: {{ .Values.scale.minReplicaCount }}
+  maxReplicaCount: {{ .Values.scale.maxReplicaCount }}
+  triggers:
+  - type: azure-queue
+    metadata:
+      queueName: {{ .Values.storage.inputQueueName }}
+      queueLength: '{{ .Values.scale.targetLengthOfQueue }}'
+      accountName: {{ .Values.storage.storageAccountName }}
+      cloud: AzurePublicCloud
+    authenticationRef:
+      name: azure-queue-auth
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: compute-deployment
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: compute
+  template:
+    metadata:
+      labels:
+        app: compute
+    spec:
+      containers:
+      - name: compute
+        image: '{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}'
+        env:
+        - name: AZURE_STORAGE_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: azure-connection-strings
+              key: storage-account-connection-string
+        - name: AZURE_STORAGE_QUEUE_NAME
+          value: {{ .Values.storage.inputQueueName }}
+        - name: AZURE_STORAGE_INPUT_BLOB_CONTAINER_NAME
+          value: {{ .Values.storage.inputStorageContainerName }}
+        - name: AZURE_STORAGE_OUTPUT_BLOB_CONTAINER_NAME
+          value: {{ .Values.storage.outputStorageContainerName }}
+        - name: LOOP_SLEEP_TIME_IN_SECONDS 
+          value: '{{ .Values.scale.loopSleepTimeInSeconds }}'
+        resources:
+          requests:
+            cpu: {{ .Values.resources.requests.cpu }}
+            memory: {{ .Values.resources.requests.memory }}
+          
