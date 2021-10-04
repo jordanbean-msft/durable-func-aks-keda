@@ -12,7 +12,6 @@ storage:
   inputQueueName:
   inputStorageContainerName:
   outputStorageContainerName:
-  storageAccountConnectionString: 
 
 replicas: 1
 
@@ -24,6 +23,6 @@ scale:
   pollingInterval: 5
   cooldownPeriod: 30
   minReplicaCount: 0
-  maxReplicaCount: 20
+  maxReplicaCount: 100
   targetLengthOfQueue: '5'
   loopSleepTimeInSeconds: 5

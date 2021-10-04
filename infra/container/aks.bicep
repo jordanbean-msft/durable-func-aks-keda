@@ -41,20 +41,6 @@ resource aks 'Microsoft.ContainerService/managedClusters@2021-07-01' = {
         maxCount: 5
         mode: 'System'
       }
-      {
-        name: 'computepool'
-        count: 1
-        vmSize: 'Standard_D4s_v3'
-        osDiskSizeGB: 60
-        osDiskType: 'Ephemeral'
-        type: 'VirtualMachineScaleSets'
-        minCount: 1
-        maxCount: 20
-        enableAutoScaling: true
-        mode: 'User'
-        osType: 'Linux'
-        osSKU: 'Ubuntu'
-      }
     ]
     addonProfiles: {
       azurepolicy: {
@@ -69,6 +55,23 @@ resource aks 'Microsoft.ContainerService/managedClusters@2021-07-01' = {
     }
     enableRBAC: true
     dnsPrefix: longName
+  }
+}
+
+resource aksComputeAgentPool 'Microsoft.ContainerService/managedClusters/agentPools@2021-07-01' = {
+  name: '${aks.name}/computepool'
+  properties: {
+    count: 1
+    vmSize: 'Standard_D8s_v3'
+    osDiskSizeGB: 60
+    osDiskType: 'Ephemeral'
+    type: 'VirtualMachineScaleSets'
+    minCount: 1
+    maxCount: 100
+    enableAutoScaling: true
+    mode: 'User'
+    osType: 'Linux'
+    osSKU: 'Ubuntu'
   }
 }
 
