@@ -26,4 +26,4 @@ scale:
   minReplicaCount: 0
   maxReplicaCount: 20
   targetLengthOfQueue: '5'
-  maxIdleTimeInSeconds: 10
+  loopSleepTimeInSeconds: 5

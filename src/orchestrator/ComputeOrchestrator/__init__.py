@@ -27,11 +27,10 @@ class InputData:
         return result
 
 def orchestrator_function(context: df.DurableOrchestrationContext):
+    input_count = int(context.get_input())
     input_data = []
-    for i in range(30):
-      input_data.append(InputData(input_id=i, instance_id=context.instance_id, input_data=[1,1]))
-      input_data.append(InputData(input_id=i, instance_id=context.instance_id, input_data=[2,2]))
-      input_data.append(InputData(input_id=i, instance_id=context.instance_id, input_data=[3,3]))
+    for i in range(input_count):
+        input_data.append(InputData(input_id=i, instance_id=context.instance_id, input_data=[1,1]))
     tasks = []
 
     for input in input_data:

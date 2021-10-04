@@ -42,10 +42,7 @@ def main():
     queue_name = os.getenv("AZURE_STORAGE_QUEUE_NAME")
     input_blob_container_name = os.getenv("AZURE_STORAGE_INPUT_BLOB_CONTAINER_NAME")
     output_blob_container_name = os.getenv("AZURE_STORAGE_OUTPUT_BLOB_CONTAINER_NAME")
-    max_idle_time_in_seconds = os.getenv("MAX_IDLE_TIME_IN_SECONDS")
-
-    sleep_time_in_seconds = 5
-    max_loop_count = int(max_idle_time_in_seconds) / sleep_time_in_seconds
+    sleep_time_in_seconds = os.getenv("LOOP_SLEEP_TIME_IN_SECONDS")
 
     blob_service_client = BlobServiceClient.from_connection_string(connection_string)
 
@@ -89,8 +86,6 @@ def main():
         log.info(f"Sleeping for {sleep_time_in_seconds}...")
 
         time.sleep(sleep_time_in_seconds)
-
-    log.info("Max duration reached. Shutting down...")
 
 if __name__=="__main__":
     main()

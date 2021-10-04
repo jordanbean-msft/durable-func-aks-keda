@@ -62,8 +62,8 @@ spec:
           value: {{ .Values.storage.inputStorageContainerName }}
         - name: AZURE_STORAGE_OUTPUT_BLOB_CONTAINER_NAME
           value: {{ .Values.storage.outputStorageContainerName }}
-        - name: MAX_IDLE_TIME_IN_SECONDS
-          value: '{{ .Values.scale.maxIdleTimeInSeconds }}'
+        - name: LOOP_SLEEP_TIME_IN_SECONDS 
+          value: '{{ .Values.scale.loopSleepTimeInSeconds }}'
         resources:
           requests:
             cpu: {{ .Values.resources.requests.cpu }}
