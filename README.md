@@ -1,4 +1,4 @@
-# durable-func-and-aci
+# durable-func-aks-keda
 
 This demo uses [Azure Durable Functions](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview?tabs=python), [Event Grid](https://docs.microsoft.com/en-us/azure/event-grid/overview), [Azure Kubernetes Service](https://docs.microsoft.com/en-us/azure/aks/) & [KEDA](https://keda.sh/) to provide a general purpose orchestrated compute engine.
 
