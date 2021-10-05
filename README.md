@@ -158,7 +158,7 @@ Look in the `src/compute/main.py` & `src/compute/algorithm/__init__.py` to see w
 
 ## KEDA
 
-[KEDA](https://keda.sh/) is a service that give you event-driven autoscaling in Kubernetes. This service listens to an queue you give it (such as an Azure Storage Queue) and scales pods up and down based upon the configuration options you provide. You can specify the minimum number of pods (including zero), the maximum number of pods & the length of queue messages you want to target.
+[KEDA](https://keda.sh/) is a service that gives you event-driven autoscaling in Kubernetes. This service listens to an queue you give it (such as an Azure Storage Queue) and scales pods up and down based upon the configuration options you provide. You can specify the minimum number of pods (including zero), the maximum number of pods & the length of queue messages you want to target.
 
 This is specified in the `infra/aks/compute/templates/compute.yaml` Helm chart.
 
