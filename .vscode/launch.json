@@ -2,6 +2,31 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": ".NET Core Attach",
+      "type": "coreclr",
+      "request": "attach"
+    },
+    {
+      "name": ".NET Core Launch (web)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "watch",
+      "program": "${workspaceFolder}/src/web-app-chart/bin/Debug/net5.0/web-app-chart.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/web-app-chart",
+      "stopAtEntry": false,
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      },
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "sourceFileMap": {
+        "/Views": "${workspaceFolder}/Views"
+      }
+    },
+    {
       "name": "Attach to Python Functions",
       "type": "python",
       "request": "attach",

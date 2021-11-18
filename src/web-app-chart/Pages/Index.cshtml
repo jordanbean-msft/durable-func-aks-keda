@@ -1,0 +1,197 @@
+﻿@page
+@model IndexModel
+@{
+  ViewData["Title"] = "Home page";
+}
+
+<div style="margin:0 auto; width: 100%;">
+<div class="chart-container" width="34%" style="float:left;">
+  <canvas id="queueChart"></canvas>
+</div>
+<div class="chart-container" width="33%" style="float:left;">
+  <canvas id="podChart"></canvas>
+</div>
+<div class="chart-container" width="33%" style="float:left;">
+  <canvas id="nodePoolChart"></canvas>
+</div>
+</div>
+
+<script type="text/javascript">
+  function GetQueueLengthJson() {
+    var resp = [];
+    $.ajax({
+      type: "GET",
+      url: '/?handler=QueueLength',
+      async: false,
+      contentType: "application/json",
+      success: function (data) {
+        resp.push(data);
+      },
+      error: function (req, status, error) {
+        console.log("error");
+        console.log(req);
+        console.log(status);
+        console.log(error);
+      }
+    });
+    return resp;
+  }
+  function GetPodCountJson() {
+    var resp = [];
+    $.ajax({
+      type: "GET",
+      url: '/?handler=PodCount',
+      async: false,
+      contentType: "application/json",
+      success: function (data) {
+        resp.push(data);
+      },
+      error: function (req, status, error) {
+        console.log("error");
+        console.log(req);
+        console.log(status);
+        console.log(error);
+      }
+    });
+    return resp;
+  }
+  function GetNodePoolCountJson() {
+    var resp = [];
+    $.ajax({
+      type: "GET",
+      url: '/?handler=NodePoolCount',
+      async: false,
+      contentType: "application/json",
+      success: function (data) {
+        resp.push(data);
+      },
+      error: function (req, status, error) {
+        console.log("error");
+        console.log(req);
+        console.log(status);
+        console.log(error);
+      }
+    });
+    return resp;
+  }
+
+  document.addEventListener('DOMContentLoaded', (event) => {
+    var queueLengthData = GetQueueLengthJson();
+    var podCountData = GetPodCountJson();
+    var nodePoolCountData = GetNodePoolCountJson();
+
+    var queueCtx = document.getElementById('queueChart');
+    var queueChart = new Chart(queueCtx,
+      {
+        type: 'bar',
+        responsive: true,
+        data:
+        {
+          labels: queueLengthData[0].labels,
+          datasets: [{
+            label: 'Count',
+            data: queueLengthData[0].counts,
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.2)',
+            ],
+            borderColor: [
+              'rgba(255, 99, 132, 1)',
+            ],
+            borderWidth: 1
+          }]
+        },
+        options:
+        {
+          scales:
+          {
+            yAxes: [{
+              ticks:
+              {
+                beginAtZero: true
+              }
+            }]
+          }
+        }
+      });
+    var podCtx = document.getElementById('podChart');
+    var podChart = new Chart(podCtx,
+      {
+        type: 'bar',
+        responsive: true,
+        data:
+        {
+          labels: podCountData[0].labels,
+          datasets: [{
+            label: 'Count',
+            data: podCountData[0].counts,
+            backgroundColor: [
+              'rgba(99, 255, 132, 0.2)',
+            ],
+            borderColor: [
+              'rgba(99, 255, 132, 1)',
+            ],
+            borderWidth: 1
+          }]
+        },
+        options:
+        {
+          scales:
+          {
+            yAxes: [{
+              ticks:
+              {
+                beginAtZero: true
+              }
+            }]
+          }
+        }
+      });
+    var nodePoolCtx = document.getElementById('nodePoolChart');
+    var nodePoolChart = new Chart(nodePoolCtx,
+      {
+        type: 'bar',
+        responsive: true,
+        data:
+        {
+          labels: nodePoolCountData[0].labels,
+          datasets: [{
+            label: 'Count',
+            data: nodePoolCountData[0].counts,
+            backgroundColor: [
+              'rgba(99, 99, 255, 0.2)',
+            ],
+            borderColor: [
+              'rgba(99, 99, 255, 1)',
+            ],
+            borderWidth: 1
+          }]
+        },
+        options:
+        {
+          scales:
+          {
+            yAxes: [{
+              ticks:
+              {
+                beginAtZero: true
+              }
+            }]
+          }
+        }
+      });
+
+  setInterval(function() {
+    var queueLengthData = GetQueueLengthJson();
+    var podCountData = GetPodCountJson();
+    var nodePoolCountData = GetNodePoolCountJson();
+    
+    queueChart.data.datasets[0].data[0] = queueLengthData[0].counts;
+    podChart.data.datasets[0].data[0] = podCountData[0].counts;
+    nodePoolChart.data.datasets[0].data[0] = nodePoolCountData[0].counts;
+    
+    queueChart.update();
+    podChart.update();
+    nodePoolChart.update();
+  }, 5000)
+  });
+</script>
