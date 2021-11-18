@@ -5,81 +5,83 @@
 }
 
 <div style="margin:0 auto; width: 100%;">
-<div class="chart-container" width="34%" style="float:left;">
-  <canvas id="queueChart" height="600"></canvas>
-</div>
-<div class="chart-container" width="33%" style="float:left;">
-  <canvas id="podChart" height="600"></canvas>
-</div>
-<div class="chart-container" width="33%" style="float:left;">
-  <canvas id="nodePoolChart" height="600"></canvas>
-</div>
+  <div class="chart-container" width="34%" style="float:left;">
+    <canvas id="queueChart" height="600"></canvas>
+  </div>
+  <div class="chart-container" width="33%" style="float:left;">
+    <canvas id="podChart" height="600"></canvas>
+  </div>
+  <div class="chart-container" width="33%" style="float:left;">
+    <canvas id="nodePoolChart" height="600"></canvas>
+  </div>
 </div>
 
 <script type="text/javascript">
   function GetQueueLengthJson() {
-    var resp = [];
-    $.ajax({
-      type: "GET",
-      url: '/?handler=QueueLength',
-      async: false,
-      contentType: "application/json",
-      success: function (data) {
-        resp.push(data);
-      },
-      error: function (req, status, error) {
-        console.log("error");
-        console.log(req);
-        console.log(status);
-        console.log(error);
-      }
+    return new Promise(resolve => {
+      var resp = [];
+      $.ajax({
+        type: "GET",
+        url: '/?handler=QueueLength',
+        async: false,
+        contentType: "application/json",
+        success: function (data) {
+          resp.push(data);
+        },
+        error: function (req, status, error) {
+          console.log("error");
+          console.log(req);
+          console.log(status);
+          console.log(error);
+        }
+      });
+      return resolve(resp);
     });
-    return resp;
   }
   function GetPodCountJson() {
-    var resp = [];
-    $.ajax({
-      type: "GET",
-      url: '/?handler=PodCount',
-      async: false,
-      contentType: "application/json",
-      success: function (data) {
-        resp.push(data);
-      },
-      error: function (req, status, error) {
-        console.log("error");
-        console.log(req);
-        console.log(status);
-        console.log(error);
-      }
+    return new Promise(resolve => {
+      var resp = [];
+      $.ajax({
+        type: "GET",
+        url: '/?handler=PodCount',
+        async: false,
+        contentType: "application/json",
+        success: function (data) {
+          resp.push(data);
+        },
+        error: function (req, status, error) {
+          console.log("error");
+          console.log(req);
+          console.log(status);
+          console.log(error);
+        }
+      });
+      return resolve(resp);
     });
-    return resp;
   }
   function GetNodePoolCountJson() {
-    var resp = [];
-    $.ajax({
-      type: "GET",
-      url: '/?handler=NodePoolCount',
-      async: false,
-      contentType: "application/json",
-      success: function (data) {
-        resp.push(data);
-      },
-      error: function (req, status, error) {
-        console.log("error");
-        console.log(req);
-        console.log(status);
-        console.log(error);
-      }
+    return new Promise(resolve => {
+      var resp = [];
+      $.ajax({
+        type: "GET",
+        url: '/?handler=NodePoolCount',
+        async: false,
+        contentType: "application/json",
+        success: function (data) {
+          resp.push(data);
+        },
+        error: function (req, status, error) {
+          console.log("error");
+          console.log(req);
+          console.log(status);
+          console.log(error);
+        }
+      });
+      return resolve(resp);
     });
-    return resp;
   }
 
   document.addEventListener('DOMContentLoaded', (event) => {
-    var queueLengthData = GetQueueLengthJson();
-    var podCountData = GetPodCountJson();
-    var nodePoolCountData = GetNodePoolCountJson();
-
     var queueCtx = document.getElementById('queueChart');
     var queueChart = new Chart(queueCtx,
       {
@@ -87,10 +89,10 @@
         responsive: true,
         data:
         {
-          labels: queueLengthData[0].labels,
+          labels: ['# of Messages in Queue'],
           datasets: [{
             label: 'Count',
-            data: queueLengthData[0].counts,
+            data: 0,
             backgroundColor: [
               'rgba(255, 99, 132, 0.2)',
             ],
@@ -104,9 +106,9 @@
         {
           scales:
           {
-            y: {            
-                beginAtZero: true
-              }
+            y: {
+              beginAtZero: true
+            }
           }
         }
       });
@@ -117,30 +119,30 @@
         responsive: true,
         data:
         {
-          labels: podCountData[0].labels,
+          labels: ['# of Pods'],
           datasets: [
-          {
-            label: 'Pending',
-            data: podCountData[0].pending,
-            backgroundColor: [
-              'rgba(99, 255, 132, 0.2)',
-            ],
-            borderColor: [
-              'rgba(99, 255, 132, 1)',
-            ],
-            borderWidth: 1
-          },
-          {
-            label: 'Running',
-            data: podCountData[0].running,
-            backgroundColor: [
-              'rgba(99, 255, 132, 1)',
-            ],
-            borderColor: [
-              'rgba(99, 255, 132, 1)',
-            ],
-            borderWidth: 1
-          }
+            {
+              label: 'Pending',
+              data: 0,
+              backgroundColor: [
+                'rgba(99, 255, 132, 0.2)',
+              ],
+              borderColor: [
+                'rgba(99, 255, 132, 1)',
+              ],
+              borderWidth: 1
+            },
+            {
+              label: 'Running',
+              data: 0,
+              backgroundColor: [
+                'rgba(99, 255, 132, 1)',
+              ],
+              borderColor: [
+                'rgba(99, 255, 132, 1)',
+              ],
+              borderWidth: 1
+            }
           ]
         },
         options:
@@ -163,10 +165,10 @@
         responsive: true,
         data:
         {
-          labels: nodePoolCountData[0].labels,
+          labels: ['# of VMs in Node Pool'],
           datasets: [{
             label: 'Count',
-            data: nodePoolCountData[0].counts,
+            data: 0,
             backgroundColor: [
               'rgba(99, 99, 255, 0.2)',
             ],
@@ -180,26 +182,27 @@
         {
           scales:
           {
-            y:{
-                beginAtZero: true
-              }
+            y: {
+              beginAtZero: true
+            }
           }
         }
       });
 
-  setInterval(function() {
-    var queueLengthData = GetQueueLengthJson();
-    var podCountData = GetPodCountJson();
-    var nodePoolCountData = GetNodePoolCountJson();
-    
-    queueChart.data.datasets[0].data[0] = queueLengthData[0].counts;
-    podChart.data.datasets[0].data[0] = podCountData[0].pending;
-    podChart.data.datasets[1].data[0] = podCountData[0].running;
-    nodePoolChart.data.datasets[0].data[0] = nodePoolCountData[0].counts;
-    
-    queueChart.update();
-    podChart.update();
-    nodePoolChart.update();
-  }, 5000)
+    setInterval(function () {
+      GetQueueLengthJson().then(result => {
+        queueChart.data.datasets[0].data[0] = result[0].counts;
+        queueChart.update();
+      });
+      GetPodCountJson().then(result => {
+        podChart.data.datasets[0].data[0] = result[0].pending;
+        podChart.data.datasets[1].data[0] = result[0].running;
+        podChart.update();
+      });
+      GetNodePoolCountJson().then(result => {
+        nodePoolChart.data.datasets[0].data[0] = result[0].counts;
+        nodePoolChart.update();
+      });
+    }, 5000)
   });
 </script>
