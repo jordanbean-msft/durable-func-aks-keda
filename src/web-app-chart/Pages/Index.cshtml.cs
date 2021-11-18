@@ -50,19 +50,25 @@ namespace web_app_chart.Pages
     }
     public async Task<ActionResult> OnGetPodCountAsync() {
       string[] labels = new string[1]{"# of Pods"};
-      string[] counts = new string[1];
+      string[] pending = new string[1];
+      string[] running = new string[1];
+      string[] shuttingDown = new string[1];
 
       var result = await GetPodCount();
-      counts[0] = result.ToString();
+      pending[0] = result.Pending.ToString();
+      running[0] = result.Running.ToString();
+      shuttingDown[0] = result.ShuttingDown.ToString();
 
       return new JsonResult(new {
         labels = labels,
-        counts = counts
+        pending = pending,
+        running = running,
+        shuttingDown = shuttingDown
       });
     }
  
     public async Task<ActionResult> OnGetNodePoolCountAsync() {
-      string[] labels = new string[1]{"# of VM scale sets in Node Pool"};
+      string[] labels = new string[1]{"# of VMs in Node Pool"};
       string[] counts = new string[1];
 
       var result = await GetNodePoolCount();
@@ -76,10 +82,15 @@ namespace web_app_chart.Pages
        
     public void OnGet() { }
 
-  public async Task<int> GetPodCount()
+  public async Task<PodStatusCount> GetPodCount()
   {
     var result = await httpClient.GetFromJsonAsync<KubernetesList>($"http://localhost:8080/api/v1/namespaces/compute/pods");
-    return result.Items.Count();
+    PodStatusCount podStatusCount = new PodStatusCount{
+      Pending = result.Items.Where(_ => _.Status.Phase == "Pending" || _.Status.Phase == "ContainerCreating").Count(),
+      Running = result.Items.Where(_ => _.Status.Phase == "Running").Count(),
+      ShuttingDown = result.Items.Where(_ => _.Status.Phase == "Terminating" || _.Status.Phase == "CrashLoopBackOff" || _.Status.Phase == "Error").Count()
+    };
+    return podStatusCount;
   }
   public async Task<int> GetNodePoolCount()
   {
@@ -105,6 +116,12 @@ namespace web_app_chart.Pages
 
     throw new ArgumentException($"Unable to find storage queue with name ${queueName}");
 }
+  }
+
+  public class PodStatusCount {
+    public int Pending { get; set; }
+    public int Running { get; set; }
+    public int ShuttingDown { get; set; }
   }
 public class ItemMetadata {
   public string Name { get; set; }

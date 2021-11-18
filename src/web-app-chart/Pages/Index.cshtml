@@ -6,13 +6,13 @@
 
 <div style="margin:0 auto; width: 100%;">
 <div class="chart-container" width="34%" style="float:left;">
-  <canvas id="queueChart"></canvas>
+  <canvas id="queueChart" height="600"></canvas>
 </div>
 <div class="chart-container" width="33%" style="float:left;">
-  <canvas id="podChart"></canvas>
+  <canvas id="podChart" height="600"></canvas>
 </div>
 <div class="chart-container" width="33%" style="float:left;">
-  <canvas id="nodePoolChart"></canvas>
+  <canvas id="nodePoolChart" height="600"></canvas>
 </div>
 </div>
 
@@ -104,12 +104,9 @@
         {
           scales:
           {
-            yAxes: [{
-              ticks:
-              {
+            y: {            
                 beginAtZero: true
               }
-            }]
           }
         }
       });
@@ -121,9 +118,10 @@
         data:
         {
           labels: podCountData[0].labels,
-          datasets: [{
-            label: 'Count',
-            data: podCountData[0].counts,
+          datasets: [
+          {
+            label: 'Pending',
+            data: podCountData[0].pending,
             backgroundColor: [
               'rgba(99, 255, 132, 0.2)',
             ],
@@ -131,18 +129,30 @@
               'rgba(99, 255, 132, 1)',
             ],
             borderWidth: 1
-          }]
+          },
+          {
+            label: 'Running',
+            data: podCountData[0].running,
+            backgroundColor: [
+              'rgba(99, 255, 132, 1)',
+            ],
+            borderColor: [
+              'rgba(99, 255, 132, 1)',
+            ],
+            borderWidth: 1
+          }
+          ]
         },
         options:
         {
-          scales:
-          {
-            yAxes: [{
-              ticks:
-              {
-                beginAtZero: true
-              }
-            }]
+          scales: {
+            x: {
+              stacked: true
+            },
+            y: {
+              beginAtZero: true,
+              stacked: true
+            }
           }
         }
       });
@@ -170,12 +180,9 @@
         {
           scales:
           {
-            yAxes: [{
-              ticks:
-              {
+            y:{
                 beginAtZero: true
               }
-            }]
           }
         }
       });
@@ -186,7 +193,8 @@
     var nodePoolCountData = GetNodePoolCountJson();
     
     queueChart.data.datasets[0].data[0] = queueLengthData[0].counts;
-    podChart.data.datasets[0].data[0] = podCountData[0].counts;
+    podChart.data.datasets[0].data[0] = podCountData[0].pending;
+    podChart.data.datasets[1].data[0] = podCountData[0].running;
     nodePoolChart.data.datasets[0].data[0] = nodePoolCountData[0].counts;
     
     queueChart.update();
