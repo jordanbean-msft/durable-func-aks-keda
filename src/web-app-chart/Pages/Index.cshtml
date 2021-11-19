@@ -107,9 +107,11 @@
           scales:
           {
             y: {
-              beginAtZero: true
+              beginAtZero: true,
+              min: 0,
+              max: 100             
             }
-          }
+          }          
         }
       });
     var podCtx = document.getElementById('podChart');
@@ -122,17 +124,6 @@
           labels: ['# of Pods'],
           datasets: [
             {
-              label: 'Pending',
-              data: 0,
-              backgroundColor: [
-                'rgba(99, 255, 132, 0.2)',
-              ],
-              borderColor: [
-                'rgba(99, 255, 132, 1)',
-              ],
-              borderWidth: 1
-            },
-            {
               label: 'Running',
               data: 0,
               backgroundColor: [
@@ -142,7 +133,18 @@
                 'rgba(99, 255, 132, 1)',
               ],
               borderWidth: 1
-            }
+            },
+            {
+              label: 'Pending',
+              data: 0,
+              backgroundColor: [
+                'rgba(99, 255, 132, 0.2)',
+              ],
+              borderColor: [
+                'rgba(99, 255, 132, 1)',
+              ],
+              borderWidth: 1
+            }            
           ]
         },
         options:
@@ -153,7 +155,9 @@
             },
             y: {
               beginAtZero: true,
-              stacked: true
+              stacked: true,
+              min: 0
+              max: 32
             }
           }
         }
@@ -195,8 +199,8 @@
         queueChart.update();
       });
       GetPodCountJson().then(result => {
-        podChart.data.datasets[0].data[0] = result[0].pending;
-        podChart.data.datasets[1].data[0] = result[0].running;
+        podChart.data.datasets[0].data[0] = result[0].running;
+        podChart.data.datasets[1].data[0] = result[0].pending;
         podChart.update();
       });
       GetNodePoolCountJson().then(result => {
