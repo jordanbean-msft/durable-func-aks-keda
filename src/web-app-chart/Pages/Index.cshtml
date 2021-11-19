@@ -1,0 +1,212 @@
+﻿@page
+@model IndexModel
+@{
+  ViewData["Title"] = "Home page";
+}
+
+<div style="margin:0 auto; width: 100%;">
+  <div class="chart-container" width="34%" style="float:left;">
+    <canvas id="queueChart" height="600"></canvas>
+  </div>
+  <div class="chart-container" width="33%" style="float:left;">
+    <canvas id="podChart" height="600"></canvas>
+  </div>
+  <div class="chart-container" width="33%" style="float:left;">
+    <canvas id="nodePoolChart" height="600"></canvas>
+  </div>
+</div>
+
+<script type="text/javascript">
+  function GetQueueLengthJson() {
+    return new Promise(resolve => {
+      var resp = [];
+      $.ajax({
+        type: "GET",
+        url: '/?handler=QueueLength',
+        async: false,
+        contentType: "application/json",
+        success: function (data) {
+          resp.push(data);
+        },
+        error: function (req, status, error) {
+          console.log("error");
+          console.log(req);
+          console.log(status);
+          console.log(error);
+        }
+      });
+      return resolve(resp);
+    });
+  }
+  function GetPodCountJson() {
+    return new Promise(resolve => {
+      var resp = [];
+      $.ajax({
+        type: "GET",
+        url: '/?handler=PodCount',
+        async: false,
+        contentType: "application/json",
+        success: function (data) {
+          resp.push(data);
+        },
+        error: function (req, status, error) {
+          console.log("error");
+          console.log(req);
+          console.log(status);
+          console.log(error);
+        }
+      });
+      return resolve(resp);
+    });
+  }
+  function GetNodePoolCountJson() {
+    return new Promise(resolve => {
+      var resp = [];
+      $.ajax({
+        type: "GET",
+        url: '/?handler=NodePoolCount',
+        async: false,
+        contentType: "application/json",
+        success: function (data) {
+          resp.push(data);
+        },
+        error: function (req, status, error) {
+          console.log("error");
+          console.log(req);
+          console.log(status);
+          console.log(error);
+        }
+      });
+      return resolve(resp);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', (event) => {
+    var queueCtx = document.getElementById('queueChart');
+    var queueChart = new Chart(queueCtx,
+      {
+        type: 'bar',
+        responsive: true,
+        data:
+        {
+          labels: ['# of Messages in Queue'],
+          datasets: [{
+            label: 'Count',
+            data: 0,
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.2)',
+            ],
+            borderColor: [
+              'rgba(255, 99, 132, 1)',
+            ],
+            borderWidth: 1
+          }]
+        },
+        options:
+        {
+          scales:
+          {
+            y: {
+              beginAtZero: true,
+              min: 0,
+              max: 100             
+            }
+          }          
+        }
+      });
+    var podCtx = document.getElementById('podChart');
+    var podChart = new Chart(podCtx,
+      {
+        type: 'bar',
+        responsive: true,
+        data:
+        {
+          labels: ['# of Pods'],
+          datasets: [
+            {
+              label: 'Running',
+              data: 0,
+              backgroundColor: [
+                'rgba(99, 255, 132, 1)',
+              ],
+              borderColor: [
+                'rgba(99, 255, 132, 1)',
+              ],
+              borderWidth: 1
+            },
+            {
+              label: 'Pending',
+              data: 0,
+              backgroundColor: [
+                'rgba(99, 255, 132, 0.2)',
+              ],
+              borderColor: [
+                'rgba(99, 255, 132, 1)',
+              ],
+              borderWidth: 1
+            }            
+          ]
+        },
+        options:
+        {
+          scales: {
+            x: {
+              stacked: true
+            },
+            y: {
+              beginAtZero: true,
+              stacked: true,
+              min: 0,
+              max: 32
+            }
+          }
+        }
+      });
+    var nodePoolCtx = document.getElementById('nodePoolChart');
+    var nodePoolChart = new Chart(nodePoolCtx,
+      {
+        type: 'bar',
+        responsive: true,
+        data:
+        {
+          labels: ['# of VMs in Node Pool'],
+          datasets: [{
+            label: 'Count',
+            data: 0,
+            backgroundColor: [
+              'rgba(99, 99, 255, 0.2)',
+            ],
+            borderColor: [
+              'rgba(99, 99, 255, 1)',
+            ],
+            borderWidth: 1
+          }]
+        },
+        options:
+        {
+          scales:
+          {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+
+    setInterval(function () {
+      GetQueueLengthJson().then(result => {
+        queueChart.data.datasets[0].data[0] = result[0].counts;
+        queueChart.update();
+      });
+      GetPodCountJson().then(result => {
+        podChart.data.datasets[0].data[0] = result[0].running;
+        podChart.data.datasets[1].data[0] = result[0].pending;
+        podChart.update();
+      });
+      GetNodePoolCountJson().then(result => {
+        nodePoolChart.data.datasets[0].data[0] = result[0].counts;
+        nodePoolChart.update();
+      });
+    }, 5000)
+  });
+</script>

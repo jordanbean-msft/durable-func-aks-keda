@@ -189,6 +189,53 @@ spec:
 
 Using this in conjunction with the node pool autoscaler (specified in the `infra/container/aks.bicep` file), this solution will scale up as more messages are put on the queue and scale down as messages are processed.
 
+## Web App
+
+Included in this repo is a web app you can use to monitor the # of work items, the # of AKS pods & the # of node pools serving your code.
+
+1.  First, start up a [Kubernetes proxy](https://kubernetes.io/docs/tasks/extend-kubernetes/http-proxy-access-api/). This allows the web app to communicate with the Kubernetes cluster without having a separate authentication system in place.
+
+    ```shell
+    kubectl proxy --port=8080
+    ```
+
+1.  Get the connection string to connect to the storage queue
+
+    ```shell
+    az storage account show-connection-string -g rg-func-aks-keda-ussc-demo -n safuncakskedausscdemo
+    ```
+
+1.  Update the connection string in the `src/web-app-chart/appsettings.json` file
+
+    ```
+    "ConnectionStrings": {
+      "StorageAccountConnectionString": "DefaultEndpointsProtocol=https;AccountName=safuncakskedausscdemo;AccountKey=mRjYE+CoUk2mSnlCdaeFFakekeyJ229tLMM/qUYpPHHXnF4OrPuM/DqCWrUfjNK6va8+reWLDzGRyJA==;EndpointSuffix=core.windows.net"
+    },
+    ```
+
+1.  Start up the web app
+
+    ```shell
+    cd src/web-app-chart
+    dotnet run -c Release
+    ```
+
+3.  Navigate to the URL
+
+    ```
+    https://localhost:5001
+    ```
+
+4.  Submit a web request to start the Azure Durable Function
+
+    ```shell
+    curl -X POST https://func-funcAksKeda-ussc-demo.azurewebsites.net/api/orchestrators/ComputeOrchestrator?inputCount=100 -H 'Content-Length: 0'
+    ```
+
+You can see the web app begin to populate with data (it refreshes every 5 seconds).
+
+![web-app-chart](.img/web-app-chart.png)
+
 ## References
 
 - https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview?tabs=python
