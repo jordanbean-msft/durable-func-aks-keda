@@ -9,32 +9,38 @@ using Azure.Storage.Queues.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
-using web_app_chart.Models.Chart;
+using Microsoft.Extensions.Configuration;
 
 namespace web_app_chart.Pages
 {
   public class IndexModel : PageModel
   {
-    public ChartJs QueueChart { get; set; }
-    public string QueueChartJson { get; set; }
-
     private HttpClient httpClient;
-    private readonly ILogger<IndexModel> _logger;
-    public int QueueLength = 0;
+    private readonly ILogger<IndexModel> logger;
+    private readonly IConfiguration configuration;
+    private readonly string STORAGE_ACCOUNT_CONNECTION_STRING;
 
-    private string StorageConnectionString = "DefaultEndpointsProtocol=https;AccountName=safuncakskedausscdemo;AccountKey=mRjYE+CoUk2mSnlCdaeFFqgifbAweTTb6cJ229tLMM/qUYpPHHXnF4OrPuM/DqCWrUfjNK6va8+reWLDzGRyJA==;EndpointSuffix=core.windows.net";
+    private readonly string KUBECTL_PROXY_URI;
 
-    public IndexModel(ILogger<IndexModel> logger)
+    private readonly string INPUT_CONTAINER_NAME;
+
+    public IndexModel(ILogger<IndexModel> logger, IConfiguration configuration)
     {
-      _logger = logger;
+      this.logger = logger;
+      this.configuration = configuration;
+
       httpClient = new HttpClient();
+      
+      STORAGE_ACCOUNT_CONNECTION_STRING = configuration.GetConnectionString("StorageAccountConnectionString");
+      KUBECTL_PROXY_URI = configuration["KubectlProxyUri"];
+      INPUT_CONTAINER_NAME = configuration["InputContainerName"];
     }
 
     public async Task<ActionResult> OnGetQueueLengthAsync()
     {
       string[] counts = new string[1];
 
-      var result = await GetQueueLength("input");
+      var result = await GetQueueLength(INPUT_CONTAINER_NAME);
       counts[0] = result.ToString();
 
       return new JsonResult(new
@@ -46,18 +52,15 @@ namespace web_app_chart.Pages
     {
       string[] pending = new string[1];
       string[] running = new string[1];
-      string[] shuttingDown = new string[1];
 
       var result = await GetPodCount();
       pending[0] = result.Pending.ToString();
       running[0] = result.Running.ToString();
-      shuttingDown[0] = result.ShuttingDown.ToString();
 
       return new JsonResult(new
       {
         pending = pending,
         running = running,
-        shuttingDown = shuttingDown
       });
     }
 
@@ -78,24 +81,23 @@ namespace web_app_chart.Pages
 
     public async Task<PodStatusCount> GetPodCount()
     {
-      var result = await httpClient.GetFromJsonAsync<KubernetesList>($"http://localhost:8080/api/v1/namespaces/compute/pods");
+      var result = await httpClient.GetFromJsonAsync<KubernetesList>($"{KUBECTL_PROXY_URI}/api/v1/namespaces/compute/pods");
       PodStatusCount podStatusCount = new PodStatusCount
       {
         Pending = result.Items.Where(_ => _.Status.Phase == "Pending" || _.Status.Phase == "ContainerCreating").Count(),
         Running = result.Items.Where(_ => _.Status.Phase == "Running").Count(),
-        ShuttingDown = result.Items.Where(_ => _.Status.Phase == "Terminating" || _.Status.Phase == "CrashLoopBackOff" || _.Status.Phase == "Error").Count()
       };
       return podStatusCount;
     }
     public async Task<int> GetNodePoolCount()
     {
-      var result = await httpClient.GetFromJsonAsync<KubernetesList>($"http://localhost:8080/api/v1/nodes");
+      var result = await httpClient.GetFromJsonAsync<KubernetesList>($"{KUBECTL_PROXY_URI}/api/v1/nodes");
       return result.Items.Count();
     }
 
     public async Task<int> GetQueueLength(string queueName)
     {
-      string connectionString = StorageConnectionString;
+      string connectionString = STORAGE_ACCOUNT_CONNECTION_STRING;
 
       QueueClient queueClient = new QueueClient(connectionString, queueName);
 
@@ -103,7 +105,6 @@ namespace web_app_chart.Pages
       {
         QueueProperties properties = await queueClient.GetPropertiesAsync();
 
-        // Retrieve the cached approximate message count.
         return properties.ApproximateMessagesCount;
       }
 
