@@ -140,8 +140,7 @@ Here is the overall flow:
 1.  The orchestration function generates some input data and begins the orchestration
 1.  For each input data block, a `Compute` function is called (defined in `src/orchestration/Compute/__init__.py`)
 1.  Each `Compute` function writes an input blob to the Azure Blob Storage input container & a message to the Azure Storage Queue with the path to the file
-    - Note that the `Compute` function doesn't call any actual computation function, all it does it put an input file in storage & a path to the file in the queue, EventGrid will then fire and begin computation. This makes it so that the `Compute` function doesn't have to know anything about how the computation actually occurs. They are loosely coupled.
-1.  The Azure Storage Blob input container will fire a `Microsoft.Storage.BlobCreated` EventGrid message.
+    - Note that the `Compute` function doesn't call any actual computation function, all it does it put an input file in storage & a path to the file in the queue. This makes it so that the `Compute` function doesn't have to know anything about how the computation actually occurs. They are loosely coupled.
 1.  The KEDA process running in the AKS cluster will begin to spin up containers to process the queue messages
 1.  The Azure Kubernetes Service containers will pull each message off the queue, process the input data & write output data back to blob storage
 1.  When an output blob is created in the Azure Blob Storage output container, another `Microsoft.Storage.BlobCreated` message will get created. Another Azure Function will get called to process this message.
