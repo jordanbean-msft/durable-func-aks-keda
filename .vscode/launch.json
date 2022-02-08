@@ -10,7 +10,7 @@
       "name": ".NET Core Launch (web)",
       "type": "coreclr",
       "request": "launch",
-      "preLaunchTask": "watch",
+      // "preLaunchTask": "watch",
       "program": "${workspaceFolder}/src/web-app-chart/bin/Debug/net5.0/web-app-chart.dll",
       "args": [],
       "cwd": "${workspaceFolder}/src/web-app-chart",

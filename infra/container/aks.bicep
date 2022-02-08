@@ -1,7 +1,9 @@
 param containerRegistryName string
 param longName string
+param appName string
 param storageAccountName string
 param logAnalyticsWorkspaceName string
+param managedIdentityName string
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-04-01' existing = {
   name: storageAccountName
@@ -15,6 +17,10 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2021-06
   name: logAnalyticsWorkspaceName
 }
 
+resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
+  name: managedIdentityName
+}
+
 resource aks 'Microsoft.ContainerService/managedClusters@2021-07-01' = {
   name: 'aks-${longName}'
   location: resourceGroup().location
@@ -23,7 +29,10 @@ resource aks 'Microsoft.ContainerService/managedClusters@2021-07-01' = {
     tier: 'Free'
   }
   identity: {
-    type: 'SystemAssigned'
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${managedIdentity.id}': {}
+    }
   }
   properties: {
     agentPoolProfiles: [
@@ -41,6 +50,20 @@ resource aks 'Microsoft.ContainerService/managedClusters@2021-07-01' = {
         maxCount: 5
         mode: 'System'
       }
+      {
+        name: 'computepool'
+        count: 5
+        vmSize: 'Standard_D8s_v3'
+        osDiskSizeGB: 60
+        osDiskType: 'Ephemeral'
+        minCount: 5
+        maxCount: 100
+        enableAutoScaling: true
+        type: 'VirtualMachineScaleSets'
+        osType: 'Linux'
+        mode: 'User'
+        osSKU: 'Ubuntu'
+      }
     ]
     addonProfiles: {
       azurepolicy: {
@@ -55,32 +78,7 @@ resource aks 'Microsoft.ContainerService/managedClusters@2021-07-01' = {
     }
     enableRBAC: true
     dnsPrefix: longName
-  }
-}
-
-resource aksComputeAgentPool 'Microsoft.ContainerService/managedClusters/agentPools@2021-07-01' = {
-  name: '${aks.name}/computepool'
-  properties: {
-    count: 1
-    vmSize: 'Standard_D8s_v3'
-    osDiskSizeGB: 60
-    osDiskType: 'Ephemeral'
-    type: 'VirtualMachineScaleSets'
-    minCount: 1
-    maxCount: 100
-    enableAutoScaling: true
-    mode: 'User'
-    osType: 'Linux'
-    osSKU: 'Ubuntu'
-  }
-}
-
-resource acrPullRoleAssignment 'Microsoft.Authorization/roleAssignments@2021-04-01-preview' = {
-  name: guid('${longName}-AcrPullRole')
-  scope: containerRegistry
-  properties: {
-    principalId: aks.properties.identityProfile.kubeletidentity.objectId
-    roleDefinitionId: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d'
+    nodeResourceGroup: 'rg-${appName}-aks'
   }
 }
 
